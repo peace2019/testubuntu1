@@ -1,4 +1,4 @@
-name: Create SSH Tunnel
+name: CI
 
 on:
   push:
@@ -14,11 +14,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Install ngrok
+    - name: Download ngrok
       run: |
         sudo apt update
         sudo apt install unzip -y
-        wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-linux-amd64.zip
+        wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
         unzip ngrok-stable-linux-amd64.zip
         sudo mv ngrok /usr/local/bin/
 
@@ -28,27 +28,13 @@ jobs:
       env:
         NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
 
-    - name: Create SSH Tunnel
+    - name: Enable SSH
       run: |
-        nohup ngrok tcp 22 & disown
-        name: Create SSH Tunnel
+        sudo apt install -y openssh-server
+        sudo service ssh start
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+    - name: Set password for SSH
+      run: echo 'runneradmin:P@ssw0rd!' | sudo chpasswd
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Install sshpass
-      run: sudo apt-get install -y sshpass
-
-    - name: Start SSH Tunnel
-      run: sshpass -p ${{ secrets.SSH_PASSWORD }} ssh -o StrictHostKeyChecking=no -R 0:localhost:22 username@your-server-ip-address
+    - name: Start ngrok tunnel
+      run: nohup ngrok tcp 22 & disown
