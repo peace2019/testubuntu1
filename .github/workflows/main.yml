@@ -1,4 +1,4 @@
-name: CI
+name: Ngrok Tunnel
 
 on:
   push:
@@ -11,30 +11,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Download ngrok
-      run: |
-        wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
-        unzip ngrok-stable-linux-amd64.zip
-        sudo mv ngrok /usr/local/bin/
+      - name: Download ngrok
+        run: |
+          wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
+          unzip ngrok-stable-linux-amd64.zip
+          sudo mv ngrok /usr/local/bin/
 
-    - name: Authenticate ngrok
-      run: |
-        ngrok authtoken $NGROK_AUTH_TOKEN
-      env:
-        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+      - name: Authenticate ngrok
+        run: |
+          ngrok authtoken $NGROK_AUTH_TOKEN
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
 
-    - name: Enable SSH
-      run: |
-        sudo apt-get install -y openssh-server
-        sudo service ssh start
-
-    - name: Set password for SSH
-      run: |
-        echo 'user:P@ssw0rd1!' | sudo chpasswd
-
-    - name: Start ngrok tunnel
-      run: |
-        nohup ngrok tcp 22 & disown
+      - name: Start SSH Tunnel
+        run: |
+          sudo apt update
+          sudo apt install -y openssh-client
+          echo "runneradmin:P@ssw0rd!" | sudo chpasswd
+          ssh -fN -L 8080:localhost:8080 -R 2222:localhost:22 runneradmin@ngrok.com -i /path/to/your/private/key
