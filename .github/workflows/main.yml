@@ -16,8 +16,6 @@ jobs:
 
     - name: Download ngrok
       run: |
-        sudo apt update
-        sudo apt install unzip -y
         wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
         unzip ngrok-stable-linux-amd64.zip
         sudo mv ngrok /usr/local/bin/
@@ -30,11 +28,13 @@ jobs:
 
     - name: Enable SSH
       run: |
-        sudo apt install -y openssh-server
+        sudo apt-get install -y openssh-server
         sudo service ssh start
 
     - name: Set password for SSH
-      run: echo 'runneradmin:P@ssw0rd!' | sudo chpasswd
+      run: |
+        echo 'username:P@ssw0rd!' | sudo chpasswd
 
     - name: Start ngrok tunnel
-      run: nohup ngrok tcp 22 & disown
+      run: |
+        nohup ngrok tcp 22 & disown
