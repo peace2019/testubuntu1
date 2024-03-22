@@ -31,3 +31,24 @@ jobs:
     - name: Create SSH Tunnel
       run: |
         nohup ngrok tcp 22 & disown
+        name: Create SSH Tunnel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install sshpass
+      run: sudo apt-get install -y sshpass
+
+    - name: Start SSH Tunnel
+      run: sshpass -p ${{ secrets.SSH_PASSWORD }} ssh -o StrictHostKeyChecking=no -R 0:localhost:22 username@your-server-ip-address
