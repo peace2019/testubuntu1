@@ -1,0 +1,44 @@
+name: Create VM
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install ngrok
+      run: |
+        sudo apt update
+        sudo apt install unzip -y
+        wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-linux-amd64.zip
+        unzip ngrok-stable-linux-amd64.zip
+        sudo mv ngrok /usr/local/bin/
+
+    - name: Authenticate ngrok
+      run: |
+        ngrok authtoken $NGROK_AUTH_TOKEN
+      env:
+        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+
+    - name: Enable Remote Desktop
+      run: |
+        sudo ufw allow 3389
+        sudo apt install -y xrdp
+        sudo systemctl enable xrdp
+        sudo systemctl start xrdp
+
+    - name: Set Password for xrdp
+      run: |
+        echo "ubuntu:P@ssw0rd!" | sudo chpasswd
+
+    - name: Start ngrok tunnel
+      run: |
+        nohup ngrok tcp 3389 & disown
